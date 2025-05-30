@@ -14,4 +14,4 @@ A web application that analyzes fantasy football trades and provides grades out 
 3. View your trade grade and analysis
 
 ## Live Demo
-[View App](https://yourusername.github.io/fantasy-trade-grader)
+[View App](https://ethansepa.github.io/fantasy-trade-grader)
