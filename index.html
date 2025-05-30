@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Football Trade Grader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .trade-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .team-section {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .team-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .team-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 10px;
+        }
+
+        .player-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .player-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .position-tag {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .add-player-btn {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .add-player-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .analyze-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .analyze-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f7fafc, #edf2f7);
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+            display: none;
+        }
+
+        .score-display {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .score-number {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+        }
+
+        .score-label {
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin-top: 10px;
+        }
+
+        .analysis {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .analysis h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .analysis p {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .remove-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #c53030;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .trade-form {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏈 Fantasy Trade Grader</h1>
+        
+        <div class="trade-form">
+            <div class="team-section">
+                <div class="team-title">Team A Gives</div>
+                <div class="player-inputs" id="teamAInputs">
+                    <div class="player-input">
+                        <input type="text" placeholder="Enter player name" data-team="A">
+                        <span class="position-tag">P1</span>
+                        <button class="remove-btn" onclick="removePlayer(this)">×</button>
+                    </div>
+                </div>
+                <button class="add-player-btn" onclick="addPlayer('A')">+ Add Player</button>
+            </div>
+            
+            <div class="team-section">
+                <div class="team-title">Team B Gives</div>
+                <div class="player-inputs" id="teamBInputs">
+                    <div class="player-input">
+                        <input type="text" placeholder="Enter player name" data-team="B">
+                        <span class="position-tag">P1</span>
+                        <button class="remove-btn" onclick="removePlayer(this)">×</button>
+                    </div>
+                </div>
+                <button class="add-player-btn" onclick="addPlayer('B')">+ Add Player</button>
+            </div>
+        </div>
+        
+        <button class="analyze-btn" onclick="analyzeTrade()">
+            🎯 Analyze Trade
+        </button>
+        
+        <div class="results" id="results">
+            <div class="score-display">
+                <span class="score-number" id="scoreNumber">--</span>
+                <div class="score-label">Trade Grade</div>
+            </div>
+            
+            <div class="analysis" id="analysis">
+                <h3>📊 Trade Analysis</h3>
+                <div id="analysisText"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let playerCountA = 1;
+        let playerCountB = 1;
+
+        function addPlayer(team) {
+            const container = document.getElementById(`team${team}Inputs`);
+            const count = team === 'A' ? ++playerCountA : ++playerCountB;
+            
+            const playerDiv = document.createElement('div');
+            playerDiv.className = 'player-input';
+            playerDiv.innerHTML = `
+                <input type="text" placeholder="Enter player name" data-team="${team}">
+                <span class="position-tag">P${count}</span>
+                <button class="remove-btn" onclick="removePlayer(this)">×</button>
+            `;
+            container.appendChild(playerDiv);
+        }
+
+        function removePlayer(button) {
+            const playerDiv = button.parentElement;
+            const team = playerDiv.querySelector('input').dataset.team;
+            
+            // Don't remove if it's the last player for that team
+            const teamInputs = document.getElementById(`team${team}Inputs`);
+            if (teamInputs.children.length > 1) {
+                playerDiv.remove();
+                updatePlayerNumbers(team);
+            }
+        }
+
+        function updatePlayerNumbers(team) {
+            const container = document.getElementById(`team${team}Inputs`);
+            const players = container.querySelectorAll('.player-input');
+            players.forEach((player, index) => {
+                const tag = player.querySelector('.position-tag');
+                tag.textContent = `P${index + 1}`;
+            });
+            
+            if (team === 'A') {
+                playerCountA = players.length;
+            } else {
+                playerCountB = players.length;
+            }
+        }
+
+        function getTradeData() {
+            const teamAPlayers = [];
+            const teamBPlayers = [];
+            
+            document.querySelectorAll('[data-team="A"]').forEach(input => {
+                if (input.value.trim()) {
+                    teamAPlayers.push(input.value.trim());
+                }
+            });
+            
+            document.querySelectorAll('[data-team="B"]').forEach(input => {
+                if (input.value.trim()) {
+                    teamBPlayers.push(input.value.trim());
+                }
+            });
+            
+            return { teamAPlayers, teamBPlayers };
+        }
+
+        function generateMockAnalysis(teamA, teamB) {
+            // Simulate LLM analysis with realistic fantasy football considerations
+            const factors = [
+                'positional scarcity',
+                'injury history',
+                'playoff schedule strength',
+                'target share trends',
+                'red zone usage',
+                'team offensive line quality',
+                'recent performance trends',
+                'age and career trajectory'
+            ];
+            
+            const selectedFactors = factors.sort(() => 0.5 - Math.random()).slice(0, 3);
+            
+            // Generate a score based on mock logic
+            let baseScore = 50;
+            
+            // Add randomness and player-specific adjustments
+            const playerQuality = (teamA.length + teamB.length) * 5;
+            const balanceFactor = Math.abs(teamA.length - teamB.length) * -3;
+            const randomFactor = (Math.random() - 0.5) * 30;
+            
+            const finalScore = Math.max(10, Math.min(95, baseScore + playerQuality + balanceFactor + randomFactor));
+            
+            let grade, analysis;
+            
+            if (finalScore >= 80) {
+                grade = "Excellent";
+                analysis = `This is a strong trade that addresses key roster needs. The analysis shows positive value based on ${selectedFactors.join(', ')}. Both teams appear to benefit from this swap, with good positional balance and fair value exchange.`;
+            } else if (finalScore >= 65) {
+                grade = "Good";
+                analysis = `This trade shows solid value with some minor concerns. Key factors include ${selectedFactors.join(', ')}. While not perfectly balanced, both sides get reasonable return on investment.`;
+            } else if (finalScore >= 50) {
+                grade = "Fair";
+                analysis = `This is a relatively even trade with mixed value indicators. Analysis of ${selectedFactors.join(', ')} suggests moderate benefits for both sides, though some risk factors are present.`;
+            } else if (finalScore >= 35) {
+                grade = "Poor";
+                analysis = `This trade appears unbalanced based on ${selectedFactors.join(', ')}. One side may be giving up significantly more value than they're receiving. Consider additional compensation or alternative players.`;
+            } else {
+                grade = "Very Poor";
+                analysis = `Strong concerns about this trade's fairness. Analysis of ${selectedFactors.join(', ')} indicates a heavily lopsided deal. Recommend restructuring or finding alternative trade partners.`;
+            }
+            
+            return {
+                score: Math.round(finalScore),
+                grade,
+                analysis
+            };
+        }
+
+        async function analyzeTrade() {
+            const button = document.querySelector('.analyze-btn');
+            const results = document.getElementById('results');
+            const scoreNumber = document.getElementById('scoreNumber');
+            const analysisText = document.getElementById('analysisText');
+            
+            const { teamAPlayers, teamBPlayers } = getTradeData();
+            
+            if (teamAPlayers.length === 0 || teamBPlayers.length === 0) {
+                alert('Please enter at least one player for each team!');
+                return;
+            }
+            
+            // Show loading state
+            button.disabled = true;
+            button.textContent = '🔄 Analyzing Trade...';
+            results.style.display = 'block';
+            scoreNumber.textContent = '--';
+            analysisText.innerHTML = '<div class="loading">⚡ Running advanced fantasy football analysis...</div>';
+            
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Generate mock analysis
+            const result = generateMockAnalysis(teamAPlayers, teamBPlayers);
+            
+            // Display results with animation
+            scoreNumber.textContent = result.score;
+            analysisText.innerHTML = `
+                <p><strong>Grade: ${result.grade}</strong></p>
+                <p>${result.analysis}</p>
+                <p><strong>Trade Summary:</strong></p>
+                <p>Team A gives: ${teamAPlayers.join(', ')}</p>
+                <p>Team B gives: ${teamBPlayers.join(', ')}</p>
+            `;
+            
+            // Reset button
+            button.disabled = false;
+            button.textContent = '🎯 Analyze Trade';
+            
+            // Scroll to results
+            results.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Add enter key support
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                analyzeTrade();
+            }
+        });
+    </script>
+</body>
+</html>
