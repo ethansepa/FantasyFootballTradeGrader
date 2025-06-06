@@ -238,36 +238,36 @@
 </head>
 <body>
     <div class="container">
-        <h1>🏈 Fantasy Trade Grader</h1>
+        <h1>🏈 My Fantasy Trade Analyzer</h1>
         
         <div class="trade-form">
             <div class="team-section">
-                <div class="team-title">Team A Gives</div>
-                <div class="player-inputs" id="teamAInputs">
+                <div class="team-title">📈 Players I'm Getting</div>
+                <div class="player-inputs" id="incomingInputs">
                     <div class="player-input">
-                        <input type="text" placeholder="Enter player name" data-team="A">
+                        <input type="text" placeholder="Enter player name" data-type="incoming">
                         <span class="position-tag">P1</span>
                         <button class="remove-btn" onclick="removePlayer(this)">×</button>
                     </div>
                 </div>
-                <button class="add-player-btn" onclick="addPlayer('A')">+ Add Player</button>
+                <button class="add-player-btn" onclick="addPlayer('incoming')">+ Add Player</button>
             </div>
             
             <div class="team-section">
-                <div class="team-title">Team B Gives</div>
-                <div class="player-inputs" id="teamBInputs">
+                <div class="team-title">📉 Players I'm Giving Up</div>
+                <div class="player-inputs" id="outgoingInputs">
                     <div class="player-input">
-                        <input type="text" placeholder="Enter player name" data-team="B">
+                        <input type="text" placeholder="Enter player name" data-type="outgoing">
                         <span class="position-tag">P1</span>
                         <button class="remove-btn" onclick="removePlayer(this)">×</button>
                     </div>
                 </div>
-                <button class="add-player-btn" onclick="addPlayer('B')">+ Add Player</button>
+                <button class="add-player-btn" onclick="addPlayer('outgoing')">+ Add Player</button>
             </div>
         </div>
         
         <button class="analyze-btn" onclick="analyzeTrade()">
-            🎯 Analyze Trade
+            🎯 Should I Make This Trade?
         </button>
         
         <div class="results" id="results">
@@ -277,24 +277,24 @@
             </div>
             
             <div class="analysis" id="analysis">
-                <h3>📊 Trade Analysis</h3>
+                <h3>📊 Trade Analysis For My Team</h3>
                 <div id="analysisText"></div>
             </div>
         </div>
     </div>
 
     <script>
-        let playerCountA = 1;
-        let playerCountB = 1;
+        let playerCountIncoming = 1;
+        let playerCountOutgoing = 1;
 
-        function addPlayer(team) {
-            const container = document.getElementById(`team${team}Inputs`);
-            const count = team === 'A' ? ++playerCountA : ++playerCountB;
+        function addPlayer(type) {
+            const container = document.getElementById(`${type}Inputs`);
+            const count = type === 'incoming' ? ++playerCountIncoming : ++playerCountOutgoing;
             
             const playerDiv = document.createElement('div');
             playerDiv.className = 'player-input';
             playerDiv.innerHTML = `
-                <input type="text" placeholder="Enter player name" data-team="${team}">
+                <input type="text" placeholder="Enter player name" data-type="${type}">
                 <span class="position-tag">P${count}</span>
                 <button class="remove-btn" onclick="removePlayer(this)">×</button>
             `;
@@ -303,92 +303,90 @@
 
         function removePlayer(button) {
             const playerDiv = button.parentElement;
-            const team = playerDiv.querySelector('input').dataset.team;
+            const type = playerDiv.querySelector('input').dataset.type;
             
-            // Don't remove if it's the last player for that team
-            const teamInputs = document.getElementById(`team${team}Inputs`);
-            if (teamInputs.children.length > 1) {
+            // Don't remove if it's the last player for that type
+            const typeInputs = document.getElementById(`${type}Inputs`);
+            if (typeInputs.children.length > 1) {
                 playerDiv.remove();
-                updatePlayerNumbers(team);
+                updatePlayerNumbers(type);
             }
         }
 
-        function updatePlayerNumbers(team) {
-            const container = document.getElementById(`team${team}Inputs`);
+        function updatePlayerNumbers(type) {
+            const container = document.getElementById(`${type}Inputs`);
             const players = container.querySelectorAll('.player-input');
             players.forEach((player, index) => {
                 const tag = player.querySelector('.position-tag');
                 tag.textContent = `P${index + 1}`;
             });
             
-            if (team === 'A') {
-                playerCountA = players.length;
+            if (type === 'incoming') {
+                playerCountIncoming = players.length;
             } else {
-                playerCountB = players.length;
+                playerCountOutgoing = players.length;
             }
         }
 
         function getTradeData() {
-            const teamAPlayers = [];
-            const teamBPlayers = [];
+            const incomingPlayers = [];
+            const outgoingPlayers = [];
             
-            document.querySelectorAll('[data-team="A"]').forEach(input => {
+            document.querySelectorAll('[data-type="incoming"]').forEach(input => {
                 if (input.value.trim()) {
-                    teamAPlayers.push(input.value.trim());
+                    incomingPlayers.push(input.value.trim());
                 }
             });
             
-            document.querySelectorAll('[data-team="B"]').forEach(input => {
+            document.querySelectorAll('[data-type="outgoing"]').forEach(input => {
                 if (input.value.trim()) {
-                    teamBPlayers.push(input.value.trim());
+                    outgoingPlayers.push(input.value.trim());
                 }
             });
             
-            return { teamAPlayers, teamBPlayers };
+            return { incomingPlayers, outgoingPlayers };
         }
 
-        function generateMockAnalysis(teamA, teamB) {
-            // Simulate LLM analysis with realistic fantasy football considerations
+        function generateMockAnalysis(incoming, outgoing) {
+            // Mock analysis focused on "my team" perspective
             const factors = [
-                'positional scarcity',
-                'injury history',
+                'positional scarcity for your roster',
+                'injury history comparison',
                 'playoff schedule strength',
                 'target share trends',
-                'red zone usage',
-                'team offensive line quality',
+                'red zone usage patterns',
+                'team offensive efficiency',
                 'recent performance trends',
                 'age and career trajectory'
             ];
             
             const selectedFactors = factors.sort(() => 0.5 - Math.random()).slice(0, 3);
             
-            // Generate a score based on mock logic
+            // Generate a score with bias toward incoming players
             let baseScore = 50;
+            const incomingBonus = incoming.length * 5;
+            const outgoingPenalty = outgoing.length * 3;
+            const randomFactor = (Math.random() - 0.5) * 25;
             
-            // Add randomness and player-specific adjustments
-            const playerQuality = (teamA.length + teamB.length) * 5;
-            const balanceFactor = Math.abs(teamA.length - teamB.length) * -3;
-            const randomFactor = (Math.random() - 0.5) * 30;
-            
-            const finalScore = Math.max(10, Math.min(95, baseScore + playerQuality + balanceFactor + randomFactor));
+            const finalScore = Math.max(15, Math.min(90, baseScore + incomingBonus - outgoingPenalty + randomFactor));
             
             let grade, analysis;
             
-            if (finalScore >= 80) {
+            if (finalScore >= 75) {
                 grade = "Excellent";
-                analysis = `This is a strong trade that addresses key roster needs. The analysis shows positive value based on ${selectedFactors.join(', ')}. Both teams appear to benefit from this swap, with good positional balance and fair value exchange.`;
-            } else if (finalScore >= 65) {
+                analysis = `This looks like a great trade for your team! You're getting excellent value by acquiring ${incoming.join(', ')} while giving up ${outgoing.join(', ')}. Key factors favoring this trade include ${selectedFactors.join(', ')}. This should significantly improve your roster.`;
+            } else if (finalScore >= 60) {
                 grade = "Good";
-                analysis = `This trade shows solid value with some minor concerns. Key factors include ${selectedFactors.join(', ')}. While not perfectly balanced, both sides get reasonable return on investment.`;
-            } else if (finalScore >= 50) {
+                analysis = `This trade appears favorable for your team. Getting ${incoming.join(', ')} for ${outgoing.join(', ')} shows positive value based on ${selectedFactors.join(', ')}. You should come out ahead in this deal.`;
+            } else if (finalScore >= 45) {
                 grade = "Fair";
-                analysis = `This is a relatively even trade with mixed value indicators. Analysis of ${selectedFactors.join(', ')} suggests moderate benefits for both sides, though some risk factors are present.`;
-            } else if (finalScore >= 35) {
+                analysis = `This is a relatively balanced trade. You're getting ${incoming.join(', ')} and giving up ${outgoing.join(', ')}, with ${selectedFactors.join(', ')} being key considerations. The value is roughly even with slight risk factors.`;
+            } else if (finalScore >= 30) {
                 grade = "Poor";
-                analysis = `This trade appears unbalanced based on ${selectedFactors.join(', ')}. One side may be giving up significantly more value than they're receiving. Consider additional compensation or alternative players.`;
+                analysis = `This trade doesn't look favorable for your team. Giving up ${outgoing.join(', ')} for ${incoming.join(', ')} appears to be losing value based on ${selectedFactors.join(', ')}. Consider asking for additional compensation.`;
             } else {
                 grade = "Very Poor";
-                analysis = `Strong concerns about this trade's fairness. Analysis of ${selectedFactors.join(', ')} indicates a heavily lopsided deal. Recommend restructuring or finding alternative trade partners.`;
+                analysis = `Strong recommendation to avoid this trade. You'd be significantly overpaying by giving up ${outgoing.join(', ')} for ${incoming.join(', ')}. Analysis of ${selectedFactors.join(', ')} indicates this hurts your team's chances of winning.`;
             }
             
             return {
@@ -404,10 +402,10 @@
             const scoreNumber = document.getElementById('scoreNumber');
             const analysisText = document.getElementById('analysisText');
             
-            const { teamAPlayers, teamBPlayers } = getTradeData();
+            const { incomingPlayers, outgoingPlayers } = getTradeData();
             
-            if (teamAPlayers.length === 0 || teamBPlayers.length === 0) {
-                alert('Please enter at least one player for each team!');
+            if (incomingPlayers.length === 0 || outgoingPlayers.length === 0) {
+                alert('Please enter at least one player you\'re getting and one you\'re giving up!');
                 return;
             }
             
@@ -416,27 +414,26 @@
             button.textContent = '🔄 Analyzing Trade...';
             results.style.display = 'block';
             scoreNumber.textContent = '--';
-            analysisText.innerHTML = '<div class="loading">⚡ Running advanced fantasy football analysis...</div>';
+            analysisText.innerHTML = '<div class="loading">⚡ Analyzing this trade for your team...</div>';
             
-            // Simulate API delay
+            // For now, use mock analysis (will be replaced with backend API call)
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // Generate mock analysis
-            const result = generateMockAnalysis(teamAPlayers, teamBPlayers);
+            const result = generateMockAnalysis(incomingPlayers, outgoingPlayers);
             
-            // Display results with animation
+            // Display results
             scoreNumber.textContent = result.score;
             analysisText.innerHTML = `
-                <p><strong>Grade: ${result.grade}</strong></p>
+                <p><strong>Recommendation: ${result.grade}</strong></p>
                 <p>${result.analysis}</p>
                 <p><strong>Trade Summary:</strong></p>
-                <p>Team A gives: ${teamAPlayers.join(', ')}</p>
-                <p>Team B gives: ${teamBPlayers.join(', ')}</p>
+                <p>You get: ${incomingPlayers.join(', ')}</p>
+                <p>You give up: ${outgoingPlayers.join(', ')}</p>
             `;
             
             // Reset button
             button.disabled = false;
-            button.textContent = '🎯 Analyze Trade';
+            button.textContent = '🎯 Should I Make This Trade?';
             
             // Scroll to results
             results.scrollIntoView({ behavior: 'smooth' });
